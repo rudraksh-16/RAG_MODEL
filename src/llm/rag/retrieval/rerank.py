@@ -52,7 +52,6 @@ class CrossEncoderReranker:
         for doc, score in zip(documents, scores):
             doc["rerank_score"] = float(score)
 
-        # Sort by rerank score (descending)
         documents.sort(key=lambda x: x["rerank_score"], reverse=True)
 
         return documents[:top_k]
