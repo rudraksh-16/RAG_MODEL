@@ -1,7 +1,10 @@
 import json
 
+from src.llm.rag.constant import RAGConstant
 
-def seed_documents(client):
+
+def seed_documents(client) -> None:
+    """Seed the Document collection with the chapter PDFs, skipping duplicates."""
     collection = client.collections.use("Document")
 
     documents = [
@@ -43,7 +46,7 @@ def seed_documents(client):
     existing = collection.query.fetch_objects(return_properties=["document_path"])
     existing_paths = {obj.properties["document_path"] for obj in existing.objects}
 
-    with collection.batch.fixed_size(50) as batch:
+    with collection.batch.fixed_size(RAGConstant.INGEST_BATCH_SIZE) as batch:
         for doc in documents:
             if doc["document_path"] in existing_paths:
                 continue

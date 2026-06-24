@@ -1,27 +1,40 @@
 import cohere
 from typing import List
-from sentence_transformers import CrossEncoder
-import torch 
 
 from src.llm.config import RAGConfig
+from src.llm.logger import get_logger, log_duration
 from src.llm.rag.constant import RAGConstant
+
+logger = get_logger("rag.rerank")
+
+_client = None
+
+
+def get_cohere_client() -> cohere.Client:
+    """Lazily build the (reused) Cohere client once."""
+    global _client
+    if _client is None:
+        _client = cohere.Client(api_key=RAGConfig.COHERE_API_KEY)
+    return _client
 
 
 class CohereReranker:
-    def __init__(self, model: str = RAGConstant.COHERE_RERANK_MODEL):
-        self.client = cohere.Client(api_key=RAGConfig.COHERE_API_KEY)
+    def __init__(self, client: cohere.Client, model: str = RAGConstant.COHERE_RERANK_MODEL) -> None:
+        self.client = client
         self.model = model
 
     def rerank(self, query: str, documents: List[dict], top_k: int = 5) -> List[dict]:
-        """
+        """Rerank documents by relevance to the query and attach rerank scores.
+
         documents: List[{text, source, chunk_id, score}]
         """
 
         texts = [doc["text"] for doc in documents]
 
-        response = self.client.rerank(
-            model=self.model, query=query, documents=texts, top_n=top_k
-        )
+        with log_duration(logger, "COHERE RERANK"):
+            response = self.client.rerank(
+                model=self.model, query=query, documents=texts, top_n=top_k
+            )
 
         reranked_docs = []
         for r in response.results:
@@ -30,28 +43,3 @@ class CohereReranker:
             reranked_docs.append(doc)
 
         return reranked_docs
-
-    def close(self):
-        if hasattr(self.client, "close"):
-            self.client.close()
-
-
-class CrossEncoderReranker:
-    def __init__(self, model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"):
-        self.model = CrossEncoder(model_name,activation_fn=torch.nn.Sigmoid())
-
-    def rerank(self, query: str, documents: List[dict], top_k: int = 5) -> List[dict]:
-        """
-        documents: List[{text, source, chunk_index, score}]
-        """
-
-        pairs = [(query, doc["text"]) for doc in documents]
-
-        scores = self.model.predict(pairs)
-
-        for doc, score in zip(documents, scores):
-            doc["rerank_score"] = float(score)
-
-        documents.sort(key=lambda x: x["rerank_score"], reverse=True)
-
-        return documents[:top_k]
