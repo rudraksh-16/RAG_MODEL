@@ -1,0 +1,498 @@
+# Instincts generated from https://github.com/rudraksh-16/RAG_MODEL
+# Generated: 2026-07-01T14:11:59.021Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: RAG_MODEL-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/rudraksh-16/RAG_MODEL
+---
+
+# RAG_MODEL Commit Length
+
+## Action
+
+Keep commit messages concise (~35 characters)
+
+## Evidence
+
+- Average commit message length: 35 chars
+- Based on 23 commits
+
+---
+id: RAG_MODEL-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/rudraksh-16/RAG_MODEL
+---
+
+# RAG_MODEL Naming Files
+
+## Action
+
+Use snake_case naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: snake_case
+
+---
+id: RAG_MODEL-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/rudraksh-16/RAG_MODEL
+---
+
+# RAG_MODEL Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: RAG_MODEL-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/rudraksh-16/RAG_MODEL
+---
+
+# RAG_MODEL Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: RAG_MODEL-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/rudraksh-16/RAG_MODEL
+---
+
+# RAG_MODEL Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: RAG_MODEL-workflow-feature-development
+trigger: "when implementing a new feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/rudraksh-16/RAG_MODEL
+---
+
+# RAG_MODEL Workflow Feature Development
+
+## Action
+
+Follow the feature-development workflow:
+1. Add feature implementation
+2. Add tests for feature
+3. Update documentation
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~20x per month
+- Files: **/*.test.*
+
+---
+id: RAG_MODEL-workflow-add-or-update-retrieval-component
+trigger: "when doing add or update retrieval component"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/rudraksh-16/RAG_MODEL
+---
+
+# RAG_MODEL Workflow Add Or Update Retrieval Component
+
+## Action
+
+Follow the add-or-update-retrieval-component workflow:
+1. Create or update a file in src/llm/rag/retrieval/ (e.g., rerank.py, search.py)
+2. Optionally, update related files (e.g., both rerank.py and search.py together)
+3. Commit with a message referencing retrieval, rerank, or search
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: src/llm/rag/retrieval/rerank.py, src/llm/rag/retrieval/search.py
+
+---
+id: RAG_MODEL-workflow-add-or-update-agent-core-module
+trigger: "when doing add or update agent core module"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/rudraksh-16/RAG_MODEL
+---
+
+# RAG_MODEL Workflow Add Or Update Agent Core Module
+
+## Action
+
+Follow the add-or-update-agent-core-module workflow:
+1. Create or update files in src/llm/agent_core/ (e.g., agent.py, tool.py, args_schema.py, constant.py)
+2. Commit with a message referencing agent core, tool, or schema
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: src/llm/agent_core/agent.py, src/llm/agent_core/tool.py, src/llm/agent_core/args_schema.py
+
+---
+id: RAG_MODEL-workflow-add-or-update-rag-agent-module
+trigger: "when doing add or update rag agent module"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/rudraksh-16/RAG_MODEL
+---
+
+# RAG_MODEL Workflow Add Or Update Rag Agent Module
+
+## Action
+
+Follow the add-or-update-rag-agent-module workflow:
+1. Create or update files in src/llm/rag/rag_agent/ (e.g., agent.py, prompt.py, tools/make_retrieval.py)
+2. Optionally, update related constants or generation files
+3. Commit with a message referencing rag agent or prompt
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: src/llm/rag/rag_agent/agent.py, src/llm/rag/rag_agent/prompt.py, src/llm/rag/rag_agent/tools/make_retrieval.py
+
+---
+id: RAG_MODEL-workflow-pipeline-refactor-or-enhancement
+trigger: "when doing pipeline refactor or enhancement"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/rudraksh-16/RAG_MODEL
+---
+
+# RAG_MODEL Workflow Pipeline Refactor Or Enhancement
+
+## Action
+
+Follow the pipeline-refactor-or-enhancement workflow:
+1. Create or update src/llm/rag/pipeline.py and/or src/llm/rag/pipline.py
+2. Commit with a message referencing pipeline
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: src/llm/rag/pipeline.py, src/llm/rag/pipline.py
+
+---
+id: rag_model-instinct-file-naming-snake-case
+trigger: "When creating or renaming files in the codebase"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct File Naming Snake Case
+
+## Action
+
+Use snake_case for file names
+
+## Evidence
+
+- Pattern in namingConventions.files
+- Files like agent.py, tool.py, args_schema.py
+
+---
+id: rag_model-instinct-function-naming-camel-case
+trigger: "When defining a new function"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Function Naming Camel Case
+
+## Action
+
+Name functions using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.functions
+
+---
+id: rag_model-instinct-class-naming-pascal-case
+trigger: "When defining a new class"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Class Naming Pascal Case
+
+## Action
+
+Name classes using PascalCase
+
+## Evidence
+
+- Pattern in namingConventions.classes
+
+---
+id: rag_model-instinct-constant-naming-screaming-snake-case
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Constant Naming Screaming Snake Case
+
+## Action
+
+Name constants using SCREAMING_SNAKE_CASE
+
+## Evidence
+
+- Pattern in namingConventions.constants
+
+---
+id: rag_model-instinct-import-style-relative
+trigger: "When importing modules within the package"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Import Style Relative
+
+## Action
+
+Use relative imports
+
+## Evidence
+
+- Pattern in importStyle
+
+---
+id: rag_model-instinct-export-style-named
+trigger: "When exporting functions or classes from a module"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Export Style Named
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in exportStyle
+
+---
+id: rag_model-instinct-test-location-separate
+trigger: "When adding or updating tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Test Location Separate
+
+## Action
+
+Place test files in the separate 'test' directory
+
+## Evidence
+
+- Pattern in architecture.folderStructure.testLocation
+- Common folder 'test'
+
+---
+id: rag_model-instinct-feature-test-pattern
+trigger: "When implementing a new feature"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Feature Test Pattern
+
+## Action
+
+Add or update corresponding test files for the feature
+
+## Evidence
+
+- feature-development workflow commitSequence: 'Add tests for feature'
+- Files involved: **/*.test.*
+
+---
+id: rag_model-instinct-commit-prefix-standardization
+trigger: "When writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Commit Prefix Standardization
+
+## Action
+
+Start the commit message with a standard prefix: feat, chore, chroes, chores, or fix
+
+## Evidence
+
+- Pattern in commits.prefixes
+- Examples: 'feat: add rerank throught cohere', 'fix: update the test file'
+
+---
+id: rag_model-instinct-commit-message-length
+trigger: "When composing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Commit Message Length
+
+## Action
+
+Keep commit messages concise (around 35 characters on average)
+
+## Evidence
+
+- Pattern in commits.averageLength
+
+---
+id: rag_model-instinct-add-retrieval-component
+trigger: "When someone wants to implement or improve retrieval logic (e.g., reranking, search) in the RAG system"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Add Retrieval Component
+
+## Action
+
+Create or update files in src/llm/rag/retrieval/ (e.g., rerank.py, search.py) and commit with a message referencing retrieval, rerank, or search
+
+## Evidence
+
+- Workflow: add-or-update-retrieval-component
+- Commits referencing retrieval/rerank/search
+
+---
+id: rag_model-instinct-add-agent-core-module
+trigger: "When someone wants to introduce or modify foundational agent logic or configuration"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Add Agent Core Module
+
+## Action
+
+Create or update files in src/llm/agent_core/ (e.g., agent.py, tool.py, args_schema.py, constant.py) and commit with a message referencing agent core, tool, or schema
+
+## Evidence
+
+- Workflow: add-or-update-agent-core-module
+- Commits referencing agent core/tool/schema
+
+---
+id: rag_model-instinct-add-rag-agent-module
+trigger: "When someone wants to implement or modify the RAG agent's behavior or prompt engineering"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Add Rag Agent Module
+
+## Action
+
+Create or update files in src/llm/rag/rag_agent/ (e.g., agent.py, prompt.py, tools/make_retrieval.py) and commit with a message referencing rag agent or prompt
+
+## Evidence
+
+- Workflow: add-or-update-rag-agent-module
+- Commits referencing rag agent or prompt
+
+---
+id: rag_model-instinct-pipeline-refactor-or-enhancement
+trigger: "When someone wants to improve or fix the main RAG pipeline logic"
+confidence: 0.8
+domain: workflow
+source: repo-analysis
+source_repo: rudraksh-16/RAG_MODEL
+---
+
+# Rag_model Instinct Pipeline Refactor Or Enhancement
+
+## Action
+
+Create or update src/llm/rag/pipeline.py and/or src/llm/rag/pipline.py and commit with a message referencing pipeline
+
+## Evidence
+
+- Workflow: pipeline-refactor-or-enhancement
+- Commits referencing pipeline
+
