@@ -1,0 +1,6 @@
+interface:
+  display_name: "RAG MODEL"
+  short_description: "Repo-specific patterns and workflows for RAG_MODEL"
+  default_prompt: "Use the RAG_MODEL repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true
