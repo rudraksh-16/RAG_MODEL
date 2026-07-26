@@ -19,18 +19,29 @@ User ──► src/llm/main.py (REPL)
                               └─ CohereReranker.rerank     ── Cohere rerank-english-v3.0
 ```
 
-- **Backend** (`src/backend/`): Weaviate schema, document seeding, chunking, embedding/indexing.
-- **LLM / RAG** (`src/llm/`): the agent, retrieval tool, hybrid search, reranking, embeddings.
+- **Backend** (`src/backend/`): Weaviate client, `Document` / `DocumentChunk` schemas,
+  document-registry seeding.
+- **LLM / RAG** (`src/llm/`): multimodal PDF ingestion, the agent, retrieval tool,
+  hybrid search, reranking, embeddings.
 
-Retrieval flow: embed query → Weaviate hybrid search (top 20) → Cohere rerank (top 5) →
-agent answers grounded in those chunks.
+**Ingestion flow** (multimodal): PDF → `unstructured` hi_res parse (text / tables /
+images) with Tesseract OCR fallback for text-less pages → image blocks described by a
+vision LLM → structured chunking → embed → Weaviate `DocumentChunk`.
+
+**Retrieval flow:** embed query → Weaviate hybrid search (top 20) → Cohere rerank
+(top 5) → agent answers grounded in those chunks.
 
 ## Prerequisites
 
 - **Python 3.11** (see platform note below)
 - [uv](https://docs.astral.sh/uv/) for dependency management
 - **Docker** — to run Weaviate locally (the app connects to `localhost:8080`)
-- API keys: **OpenAI**, **Cohere**
+- **System libraries** for `unstructured` hi_res parsing + OCR:
+  ```bash
+  brew install tesseract poppler      # macOS
+  # Debian/Ubuntu: sudo apt-get install tesseract-ocr poppler-utils
+  ```
+- API keys: **OpenAI** (chat + vision image descriptions), **Cohere** (reranking)
 
 ### Platform note (Intel macOS)
 On Intel macOS with Python 3.13 there are no `torch` wheels, so this project pins
@@ -49,8 +60,12 @@ On Linux or Apple-Silicon you can relax these and use a newer stack.
    OPENAI_API_KEY=sk-...
    COHERE_API_KEY=...
    WEAVIATE_URL=http://localhost:8080
-   EMBEDDING_MODEL_NAME=<sentence-transformers model name>
+   EMBEDDING_MODEL_NAME=sentence-transformers/all-mpnet-base-v2
    LOG_LEVEL=INFO
+
+   # Optional — Weaviate collection names (defaults shown)
+   DOCUMENT_COLLECTION=Document
+   CHUNK_COLLECTION=DocumentChunk
    ```
 
 3. **Start Weaviate** (local, Docker):
@@ -63,11 +78,24 @@ On Linux or Apple-Silicon you can relax these and use a newer stack.
    ```
    Verify it's ready: `curl http://localhost:8080/v1/.well-known/ready` → `200`.
 
-4. **Seed & index documents** — creates the `Document` / `DocumentChunk` collections,
-   then chunks, embeds, and loads source documents into Weaviate:
+4. **Create collections & seed the document registry** — creates the `Document` /
+   `DocumentChunk` collections and seeds the source-document list (`src/backend/seed.py`):
    ```bash
    uv run python -m src.backend.main
    ```
+
+5. **Ingest PDFs** — parse, chunk, embed, and index a folder of PDFs into the
+   `DocumentChunk` collection:
+   ```bash
+   uv run python -m src.llm.rag.injection.load_pdf <folder>
+   ```
+   - `<folder>` is a directory of `.pdf` files (e.g. `IP/`, matching `seed.py`).
+   - Re-runs skip unchanged files (sha256 manifest in `.ingest_manifest.json`).
+   - Add `--reset` to drop + recreate `DocumentChunk` and force a clean re-ingest:
+     ```bash
+     uv run python -m src.llm.rag.injection.load_pdf IP --reset
+     ```
+   - Cropped image blocks are written under `images/<pdf-name>/`.
 
 ## Run
 
@@ -96,8 +124,10 @@ The chat model is provider-agnostic via `init_chat_model`. To switch:
    uv add langchain-anthropic
    ```
 
-The agent, retrieval tool, and pipeline need no changes. **Reranking stays on Cohere**
-(it is a separate service, not part of the chat-model abstraction).
+The agent, retrieval tool, and pipeline need no changes. The same `PROVIDER`/`MODEL`
+also drives **vision image descriptions** during ingestion, so the chosen model must be
+multimodal. **Reranking stays on Cohere** (a separate service, not part of the
+chat-model abstraction).
 
 ## Project layout
 
@@ -105,18 +135,22 @@ The agent, retrieval tool, and pipeline need no changes. **Reranking stays on Co
 src/
 ├── llm/
 │   ├── main.py                     # interactive REPL entry point
-│   ├── config.py                   # env config
+│   ├── config.py                   # env config (RAGConfig)
 │   └── rag/
 │       ├── pipeline.py             # rag_model() entry
-│       ├── constant.py             # PROVIDER / MODEL / temperature
-│       ├── rag_agent/
-│       │   ├── agent.py            # RagAgent — LangChain create_agent
-│       │   ├── prompt.py           # system prompt (strict, grounded)
-│       │   └── tools/make_retrieval.py   # @tool: hybrid search + rerank
+│       ├── constant.py             # PROVIDER / MODEL / retrieval + ingest tuning
+│       ├── injection/              # ingestion: parse, describe_image, load_pdf
+│       ├── chunking/               # structured_chunker.py
+│       ├── embeddings/             # embedding model loader
 │       ├── retrieval/              # search.py (Weaviate), rerank.py (Cohere)
-│       └── embeddings/             # embedding model loader
+│       └── rag_agent/
+│           ├── agent.py            # RagAgent — LangChain create_agent
+│           ├── prompt.py           # system prompt (strict, grounded)
+│           └── tools/make_retrieval.py   # @tool: hybrid search + rerank
 └── backend/
-    ├── main.py                     # seed + index documents into Weaviate
+    ├── main.py                     # create collections + seed Document registry
+    ├── config.py                   # env config (Config)
     ├── seed.py                     # source document list
-    └── weaviate_I/                 # Weaviate client + schema
+    ├── models/                     # Document / DocumentChunk schemas
+    └── weaviate_I/                 # Weaviate client
 ```

@@ -13,6 +13,17 @@ logger = get_logger("rag.retrieval")
 
 _retriever = None
 _reranker = None
+_last_sources: list[dict] = []
+
+
+def reset_sources() -> None:
+    """Clear captured grounding sources at the start of a turn."""
+    _last_sources.clear()
+
+
+def get_last_sources() -> list[dict]:
+    """Return the grounding chunks captured during the current turn."""
+    return _last_sources
 
 
 def _get_retriever() -> Retriever:
@@ -70,5 +81,14 @@ def _run_retrieval(retriever: Retriever, reranker: CohereReranker, query: str) -
             }
             for d in reranked
         ],
+    )
+    _last_sources.extend(
+        {
+            "source_file": d.get("source_file"),
+            "page": d.get("page_number"),
+            "type": d.get("element_type"),
+            "score": round(d["rerank_score"], 4),
+        }
+        for d in reranked
     )
     return json.dumps(reranked)

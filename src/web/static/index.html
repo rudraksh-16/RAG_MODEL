@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RAG Assistant · Informatics Practices XII</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #171a23;
+    --panel-2: #1e222d;
+    --line: #2a2f3d;
+    --text: #e7e9ee;
+    --muted: #9aa3b2;
+    --accent: #7c5cff;
+    --accent-2: #4dd4c4;
+    --user: #2b3350;
+    --ok: #2ecc9b;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 80% -10%, #1b2030 0%, var(--bg) 55%);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+  }
+  .app {
+    width: 100%;
+    max-width: 900px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 20px 16px;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .logo {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 20px; color: #0f1117;
+    flex-shrink: 0;
+  }
+  .title h1 { font-size: 17px; margin: 0; letter-spacing: .2px; }
+  .title p { font-size: 12.5px; margin: 2px 0 0; color: var(--muted); }
+
+  #feed {
+    flex: 1; overflow-y: auto; padding: 22px 4px; display: flex;
+    flex-direction: column; gap: 20px;
+  }
+  .msg { display: flex; gap: 12px; max-width: 100%; }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 13px; font-weight: 700;
+  }
+  .msg.user .avatar { background: var(--user); color: #cdd6f4; }
+  .msg.ai .avatar { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0f1117; }
+  .bubble { padding-top: 3px; min-width: 0; }
+  .who { font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+  .body { font-size: 14.5px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600; color: var(--ok);
+    background: rgba(46,204,155,.1); border: 1px solid rgba(46,204,155,.3);
+    padding: 3px 9px; border-radius: 999px; margin-bottom: 10px;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+
+  .sources { margin-top: 12px; }
+  .sources .label { font-size: 11px; color: var(--muted); margin-bottom: 7px; letter-spacing: .4px; text-transform: uppercase; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; background: var(--panel-2); border: 1px solid var(--line);
+    padding: 6px 10px; border-radius: 9px;
+  }
+  .chip .file { color: var(--text); font-weight: 600; }
+  .chip .meta { color: var(--muted); }
+  .chip .score { color: var(--accent-2); font-variant-numeric: tabular-nums; }
+  .chip .type { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+
+  .samples { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 2px; }
+  .sample {
+    font-size: 12.5px; color: var(--muted); cursor: pointer;
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 7px 12px; border-radius: 999px; transition: .15s;
+  }
+  .sample:hover { color: var(--text); border-color: var(--accent); }
+
+  form {
+    display: flex; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line);
+  }
+  #input {
+    flex: 1; resize: none; font: inherit; color: var(--text);
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 13px 15px; outline: none;
+  }
+  #input:focus { border-color: var(--accent); }
+  button {
+    font: inherit; font-weight: 600; color: #0f1117; cursor: pointer;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border: 0; border-radius: 12px; padding: 0 22px;
+  }
+  button:disabled { opacity: .5; cursor: default; }
+
+  .typing { display: inline-flex; gap: 4px; align-items: center; }
+  .typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: .2s; }
+  .typing span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">R</div>
+    <div class="title">
+      <h1>RAG Assistant</h1>
+      <p>Grounded Q&amp;A over the NCERT Informatics Practices · Class XII textbook</p>
+    </div>
+  </header>
+
+  <div id="feed">
+    <div class="msg ai">
+      <div class="avatar">AI</div>
+      <div class="bubble">
+        <div class="who">RAG Assistant</div>
+        <div class="body">Ask me anything from the textbook. Every answer is retrieved from the book, reranked, and cited — if it's not in the book, I'll say so instead of guessing.</div>
+        <div class="samples">
+          <span class="sample">How do I import data from MySQL into Pandas?</span>
+          <span class="sample">What SQL string functions are covered, with examples?</span>
+          <span class="sample">What are the types of computer networks?</span>
+          <span class="sample">List the MySQL data types with descriptions.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form id="chat">
+    <textarea id="input" rows="1" placeholder="Ask a question from the textbook…" autocomplete="off"></textarea>
+    <button type="submit" id="send">Send</button>
+  </form>
+</div>
+
+<script>
+  const feed = document.getElementById("feed");
+  const form = document.getElementById("chat");
+  const input = document.getElementById("input");
+  const send = document.getElementById("send");
+  const history = [];
+
+  function el(html) {
+    const t = document.createElement("template");
+    t.innerHTML = html.trim();
+    return t.content.firstChild;
+  }
+  function escape(s) {
+    return s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  }
+  function scroll() { feed.scrollTop = feed.scrollHeight; }
+
+  function addUser(text) {
+    feed.appendChild(el(`
+      <div class="msg user">
+        <div class="avatar">You</div>
+        <div class="bubble"><div class="who">You</div><div class="body">${escape(text)}</div></div>
+      </div>`));
+    scroll();
+  }
+
+  function addThinking() {
+    const node = el(`
+      <div class="msg ai">
+        <div class="avatar">AI</div>
+        <div class="bubble"><div class="who">RAG Assistant</div>
+          <div class="body"><span class="typing"><span></span><span></span><span></span></span></div>
+        </div>
+      </div>`);
+    feed.appendChild(node);
+    scroll();
+    return node;
+  }
+
+  function renderSources(sources) {
+    if (!sources || !sources.length) return "";
+    const chips = sources.map(s => `
+      <div class="chip">
+        <span class="file">${escape(s.source_file || "—")}</span>
+        <span class="meta">${s.page != null ? "p." + s.page : ""}</span>
+        <span class="type">${escape(s.type || "")}</span>
+        <span class="score">${s.score != null ? s.score.toFixed(2) : ""}</span>
+      </div>`).join("");
+    return `<div class="sources"><div class="label">Sources · ${sources.length} grounded chunks</div><div class="chips">${chips}</div></div>`;
+  }
+
+  function fillAnswer(node, answer, sources) {
+    const refused = answer.trim().startsWith("I don't know based on the provided documents");
+    const grounded = !refused && sources && sources.length;
+    node.querySelector(".bubble").innerHTML = `
+      <div class="who">RAG Assistant</div>
+      ${grounded ? '<div class="badge"><span class="dot"></span>Grounded in textbook</div>' : ""}
+      <div class="body">${escape(answer)}</div>
+      ${grounded ? renderSources(sources) : ""}`;
+    scroll();
+  }
+
+  async function ask(text) {
+    addUser(text);
+    const thinking = addThinking();
+    send.disabled = true;
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history }),
+      });
+      const data = await res.json();
+      fillAnswer(thinking, data.answer || "(no answer)", data.sources);
+      history.push({ role: "user", content: text });
+      if (data.answer) history.push({ role: "assistant", content: data.answer });
+    } catch (e) {
+      fillAnswer(thinking, "Request failed: " + e.message, []);
+    } finally {
+      send.disabled = false;
+      input.focus();
+    }
+  }
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = "";
+    ask(text);
+  });
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+  });
+  feed.addEventListener("click", e => {
+    if (e.target.classList.contains("sample")) ask(e.target.textContent);
+  });
+</script>
+</body>
+</html>
